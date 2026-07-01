@@ -190,7 +190,7 @@ namespace StrmLiteAssistant
                 .Select(item => new EditorSelectOption
                 {
                     Value = item.ToString(),
-                    Name = item.GetDescription(),
+                    Name = EnumExtensions.GetDescription(item),
                     IsEnabled = true
                 })
                 .ToList();
@@ -218,7 +218,7 @@ namespace StrmLiteAssistant
                 .Select(item => new EditorSelectOption
                 {
                     Value = item.ToString(),
-                    Name = item.GetDescription(),
+                    Name = EnumExtensions.GetDescription(item),
                     IsEnabled = true
                 })
                 .ToList();
