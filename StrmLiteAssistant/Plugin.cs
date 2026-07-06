@@ -249,6 +249,10 @@ namespace StrmLiteAssistant
                     {
                         restored = await MediaInfoApi.DeserializeMediaInfo(e.Item, directoryService,
                             "OnItemAdded Restore", true).ConfigureAwait(false);
+                        if (_currentCatchupMode && restored)
+                        {
+                            QueueManager.EnqueueTheIntroDbRefresh(e.Item, "OnItemAdded Restore");
+                        }
                     }
                     else
                     {

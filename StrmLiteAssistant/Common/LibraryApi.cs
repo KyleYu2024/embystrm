@@ -168,6 +168,97 @@ namespace StrmLiteAssistant.Common
             return item.GetMediaStreams().Any(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio);
         }
 
+        public bool TriggerTheIntroDbOnDemandFetch(long itemId, string source, out bool shouldRetry)
+        {
+            shouldRetry = false;
+            var item = _libraryManager.GetItemById(itemId);
+            if (item == null)
+            {
+                _logger.Info("TheIntroDBTrigger - Skipped (" + source + "): item not found, InternalId=" + itemId);
+                return false;
+            }
+
+            if (!IsTheIntroDbCandidate(item, out var reason, out shouldRetry))
+            {
+                _logger.Info("TheIntroDBTrigger - Skipped (" + source + "): " + reason + " - " + item.Name);
+                return false;
+            }
+
+            _libraryManager.UpdateItems(new List<BaseItem> { item }, null,
+                ItemUpdateType.MetadataImport, false, false, null, CancellationToken.None);
+
+            _logger.Info("TheIntroDBTrigger - ItemUpdated emitted (" + source + "): " + item.Name + " - " + item.Path);
+            return true;
+        }
+
+        private bool IsTheIntroDbCandidate(BaseItem item, out string reason, out bool shouldRetry)
+        {
+            shouldRetry = false;
+
+            if (!(item is Movie) && !(item is Episode))
+            {
+                reason = "not a movie or episode";
+                return false;
+            }
+
+            if (item.ExtraType != null)
+            {
+                reason = "extra item";
+                return false;
+            }
+
+            if (!IsLibraryInScope(item))
+            {
+                reason = "outside media info library scope";
+                return false;
+            }
+
+            if (item.RunTimeTicks.GetValueOrDefault() <= 0)
+            {
+                shouldRetry = true;
+                reason = "missing runtime";
+                return false;
+            }
+
+            if (item is Episode episode)
+            {
+                if (!episode.ParentIndexNumber.HasValue || !episode.IndexNumber.HasValue)
+                {
+                    shouldRetry = true;
+                    reason = "missing season or episode number";
+                    return false;
+                }
+
+                if (!HasTheIntroDbProviderId(episode) && (episode.Series == null || !HasTheIntroDbProviderId(episode.Series)))
+                {
+                    shouldRetry = true;
+                    reason = "missing episode or series provider id";
+                    return false;
+                }
+
+                reason = string.Empty;
+                return true;
+            }
+
+            if (!HasTheIntroDbProviderId(item))
+            {
+                shouldRetry = true;
+                reason = "missing movie provider id";
+                return false;
+            }
+
+            reason = string.Empty;
+            return true;
+        }
+
+        private static bool HasTheIntroDbProviderId(BaseItem item)
+        {
+            return item != null &&
+                   (item.HasProviderId(MetadataProviders.Tmdb) ||
+                    item.HasProviderId(MetadataProviders.Tvdb) ||
+                    item.HasProviderId(MetadataProviders.Imdb));
+        }
+
         public bool ImageCaptureEnabled(BaseItem item, LibraryOptions libraryOptions)
         {
             var typeName = item.ExtraType == null ? item.GetType().Name : item.DisplayParent.GetType().Name;

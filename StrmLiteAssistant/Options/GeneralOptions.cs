@@ -21,7 +21,9 @@ namespace StrmLiteAssistant.Options
             [Description("媒体信息提取")]
             MediaInfo,
             [Description("剧集元数据刷新")]
-            EpisodeRefresh
+            EpisodeRefresh,
+            [Description("TheIntroDB片头片尾预取")]
+            TheIntroDB
         }
 
         [Browsable(false)]
@@ -32,7 +34,8 @@ namespace StrmLiteAssistant.Options
         [SelectItemsSource(nameof(CatchupTaskList))]
         [VisibleCondition(nameof(CatchupMode), SimpleCondition.IsTrue)]
         public string CatchupTaskScope { get; set; } = string.Join(",",
-            CatchupTask.MediaInfo.ToString(), CatchupTask.EpisodeRefresh.ToString());
+            CatchupTask.MediaInfo.ToString(), CatchupTask.EpisodeRefresh.ToString(),
+            CatchupTask.TheIntroDB.ToString());
 
         [DisplayName("主最大并发线程数")]
         [Description("媒体信息提取任务共享，必须在 1 至 20 之间，默认为 1。")]

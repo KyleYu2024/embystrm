@@ -33,6 +33,7 @@ namespace StrmLiteAssistant.ScheduledTask
                 try
                 {
                     await Plugin.LibraryApi.RefreshEpisodeMetadata(item, cancellationToken).ConfigureAwait(false);
+                    QueueManager.EnqueueTheIntroDbRefresh(item, "EpisodeRefresh Task");
                 }
                 catch (OperationCanceledException)
                 {

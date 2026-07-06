@@ -52,6 +52,10 @@ namespace StrmLiteAssistant.ScheduledTask
                         {
                             Interlocked.Increment(ref skip);
                         }
+                        else
+                        {
+                            QueueManager.EnqueueTheIntroDbRefresh(taskItem, "MediaInfoExtract Task");
+                        }
                     }
                     catch (OperationCanceledException)
                     {
