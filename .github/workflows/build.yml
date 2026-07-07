@@ -3,14 +3,10 @@ name: Build Plugin
 on:
   push:
     branches:
-      - tab-ui
-      - simple-ui
-      - lite
+      - main
   pull_request:
     branches:
-      - tab-ui
-      - simple-ui
-      - lite
+      - main
 
 jobs:
   build:
